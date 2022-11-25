@@ -1,0 +1,12 @@
+.password-container {
+   
+    position: relative;
+}
+
+.fa-eye {
+    position: absolute;
+    top: 55%;
+    right: 4%;
+    cursor: pointer;
+    color: slategray;
+}
