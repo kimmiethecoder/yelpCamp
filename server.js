@@ -7,9 +7,9 @@ const MongoStore = require("connect-mongo")(session);
 const methodOverride = require("method-override");
 const flash = require("express-flash");
 const logger = require("morgan");
+const Campground = require('./models/campground');
 const connectDB = require("./config/database");
-const mainRoutes = require("./routes/main");
-const postRoutes = require("./routes/posts");
+
 
 //Use .env file in config folder
 require("dotenv").config({ path: "./config/.env" });
@@ -53,9 +53,46 @@ app.use(passport.session());
 //Use flash messages for errors, info, ect...
 app.use(flash());
 
-//Setup Routes For Which The Server Is Listening
-app.use("/", mainRoutes);
-app.use("/post", postRoutes);
+app.get('/', (req, res) => {
+  res.render('home')
+});
+
+app.get('/campgrounds', async (req, res) => {
+  const campgrounds = await Campground.find({});
+  res.render('campgrounds/index', { campgrounds })
+});
+
+app.get('/campgrounds/new', (req, res) => {
+  res.render('campgrounds/new');
+})
+
+app.post('/campgrounds', async (req, res) => {
+  const campground = new Campground(req.body.campground);
+  await campground.save();
+  res.redirect(`/campgrounds/${campground._id}`)
+})
+
+app.get('/campgrounds/:id', async (req, res,) => {
+  const campground = await Campground.findById(req.params.id)
+  res.render('campgrounds/show', { campground });
+});
+
+app.get('/campgrounds/:id/edit', async (req, res) => {
+  const campground = await Campground.findById(req.params.id)
+  res.render('campgrounds/edit', { campground });
+})
+
+app.put('/campgrounds/:id', async (req, res) => {
+  const { id } = req.params;
+  const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground });
+  res.redirect(`/campgrounds/${campground._id}`)
+});
+
+app.delete('/campgrounds/:id', async (req, res) => {
+  const { id } = req.params;
+  await Campground.findByIdAndDelete(id);
+  res.redirect('/campgrounds');
+})
 
 
 //Server Running
